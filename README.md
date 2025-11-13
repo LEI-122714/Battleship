@@ -1,7 +1,8 @@
 # Battleship
 
 Basic academic version of Battleship game to build upon.
-push para teste do workflow maven.yml 2
+
+- Nota: as pastas "diagrams" que contém o diagrama de classes e "javadoc" que contém o javadoc encontram-se dentro da pasta "reports".
 
 ---
 
