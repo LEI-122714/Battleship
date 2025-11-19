@@ -1,278 +1,260 @@
 package iscteiul.ista.battleship;
 
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Testes unitários da classe Ship e suas subclasses.
- * Inclui uso extensivo das principais anotações e assertivas do JUnit 5.
- */
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@DisplayName("Testes da hierarquia Ship (Barca, Caravela, Nau, etc.)")
+@DisplayName("Testes da classe Ship e subclasses (cobertura de branch)")
 class ShipTest {
 
-    private Ship barca;
-    private Ship nau;
+    /**
+     * Pequeno navio fictício apenas para testes dos métodos genéricos de Ship.
+     * Permite controlar exactamente as posições para testar limites e adjacência.
+     */
+    private static class TestShip extends Ship {
 
-    @BeforeAll
-    static void initAll() {
-        System.out.println("🚢 Início dos testes da classe Ship...");
-    }
+        private final int size;
 
-    @AfterAll
-    static void tearDownAll() {
-        System.out.println("✅ Todos os testes de Ship terminados.");
-    }
-
-    @BeforeEach
-    void setUp() {
-        barca = Ship.buildShip("barca", Compass.NORTH, new Position(5, 5));
-        nau = Ship.buildShip("nau", Compass.NORTH, new Position(5, 5));
-    }
-
-    @AfterEach
-    void tearDown() {
-        System.out.println("🧹 Teste terminado, limpando dados temporários.");
-    }
-
-    // ---------------------- TESTES UNITÁRIOS ----------------------
-
-    @Test
-    @DisplayName("buildShip deve criar as instâncias corretas")
-    void testBuildShipFactory() {
-        Ship galeao = Ship.buildShip("galeao", Compass.EAST, new Position(1, 1));
-        Ship invalido = Ship.buildShip("banana", Compass.SOUTH, new Position(1, 1));
-
-        assertAll("Verificar criação de navios válidos e inválidos",
-                () -> assertNotNull(galeao, "Galeão deve ser criado"),
-                () -> assertNull(invalido, "Tipo inválido deve retornar null"),
-                () -> assertEquals("Galeao", galeao.getCategory())
-        );
-    }
-
-    @Test
-    @DisplayName("toString deve conter categoria, bearing e posição")
-    void testToString() {
-        Ship barca = new Barge(Compass.NORTH, new Position(0, 0));
-        String str = barca.toString();
-        assertAll("Verificar conteúdo de toString",
-                () -> assertTrue(str.contains("Barca"), "toString() deve conter 'Barca'"),
-                () -> assertTrue(str.contains(barca.getBearing().toString()), "toString() deve conter o bearing"),
-                () -> assertTrue(str.contains(barca.getPosition().toString()), "toString() deve conter a posição")
-        );
-    }
-
-
-    @Test
-    @DisplayName("Limites da Carrack (Nau) devem refletir as posições geradas")
-    void testBoundaries() {
-        // NORTH => (5,5), (6,5), (7,5)
-        assertAll("Verificar limites da Nau",
-                () -> assertEquals(5, nau.getTopMostPos(), "Top deve ser 5"),
-                () -> assertEquals(7, nau.getBottomMostPos(), "Bottom deve ser 7"),
-                () -> assertEquals(5, nau.getLeftMostPos(), "Left deve ser 5"),
-                () -> assertEquals(5, nau.getRightMostPos(), "Right deve ser 5")
-        );
-    }
-
-    @Test
-    @DisplayName("shoot e stillFloating devem interagir corretamente")
-    void testShootAndStillFloating() {
-        Ship caravel = Ship.buildShip("caravela", Compass.NORTH, new Position(2, 2));
-        assertTrue(caravel.stillFloating(), "Navio novo deve flutuar");
-
-        // Acertar todas as posições
-        caravel.getPositions().forEach(p -> caravel.shoot(p));
-
-        assertFalse(caravel.stillFloating(), "Navio deve afundar após todos os tiros");
-    }
-
-    @Test
-    @DisplayName("tooCloseTo deve detetar navios adjacentes")
-    void testTooCloseTo() {
-        Ship fragata = Ship.buildShip("fragata", Compass.NORTH, new Position(5, 5));
-        Ship caravela = Ship.buildShip("caravela", Compass.NORTH, new Position(7, 5));
-
-        assertTrue(fragata.tooCloseTo(caravela), "Navios estão demasiado próximos");
-    }
-
-    @Test
-    @DisplayName("occupies deve retornar true se o navio ocupa a posição")
-    void testOccupies() {
-        assertTrue(barca.occupies(new Position(5, 5)));
-        assertFalse(barca.occupies(new Position(6, 5)));
-    }
-
-    @Test
-    @DisplayName("Deve lançar exceção para bearing nulo")
-    void testInvalidBearingThrowsException() {
-        assertThrows(AssertionError.class, () ->
-                        new Carrack(null, new Position(1, 1)),
-                "Esperava AssertionError para bearing nulo"
-        );
-    }
-
-    // ---------------------- TESTES PARAMETRIZADOS ----------------------
-
-    @ParameterizedTest(name = "Caravela com bearing {0} deve ter tamanho 2")
-    @CsvSource({"NORTH,2", "SOUTH,2", "EAST,2", "WEST,2"})
-    @DisplayName("Verificar tamanho da Caravela em várias direções")
-    void testCaravelSizeWithBearings(String bearingName, int expectedSize) {
-        Compass bearing = Compass.valueOf(bearingName);
-        Ship caravela = Ship.buildShip("caravela", bearing, new Position(1, 1));
-        assertEquals(expectedSize, caravela.getSize());
-    }
-
-    // ---------------------- TESTES ANINHADOS ----------------------
-
-    @Nested
-    @DisplayName("Testes específicos da Barca")
-    class BarcaTests {
-
-        @Test
-        @DisplayName("Barca deve ter apenas 1 posição")
-        void testBargeSize() {
-            assertEquals(1, barca.getPositions().size());
-            assertEquals(new Position(5, 5), barca.getPositions().get(0));
+        TestShip(List<IPosition> positions) {
+            super("Teste", Compass.NORTH, positions.get(0));
+            this.positions.addAll(positions);
+            this.size = positions.size();
         }
 
-        @Test
-        @DisplayName("Barca deve afundar após 1 tiro certeiro")
-        void testBargeSink() {
-            assertTrue(barca.stillFloating(), "Inicialmente flutua");
-            barca.shoot(new Position(5, 5));
-            assertFalse(barca.stillFloating(), "Afunda após um tiro certo");
+        @Override
+        public Integer getSize() {
+            return size;
         }
     }
 
-
-
-    // ---------------------- TESTE DESATIVADO ----------------------
-
-    @Disabled("Teste desativado temporariamente — exemplo de uso de @Disabled")
     @Test
-    @DisplayName("Exemplo de teste desativado")
-    void disabledTestExample() {
-        fail("Não deve correr — este teste está desativado");
-    }
+    @DisplayName("buildShip cria o tipo correcto ou null para tipo inválido")
+    void testBuildShipFactoryBranches() {
+        Ship barca   = Ship.buildShip("barca",    Compass.NORTH, new Position(0, 0));
+        Ship caravela= Ship.buildShip("caravela", Compass.EAST,  new Position(1, 1));
+        Ship nau     = Ship.buildShip("nau",      Compass.SOUTH, new Position(2, 2));
+        Ship fragata = Ship.buildShip("fragata",  Compass.WEST,  new Position(3, 3));
+        Ship galeao  = Ship.buildShip("galeao",   Compass.NORTH, new Position(4, 4));
+        Ship invalido= Ship.buildShip("submarino",Compass.NORTH, new Position(5, 5));
 
-    // ---------------------- TESTES ADICIONAIS PARA 100% COVERAGE ----------------------
-
-    @Test
-    @DisplayName("stillFloating deve retornar true e false corretamente em navios maiores")
-    void testStillFloatingFullCoverage() {
-        Ship fragata = Ship.buildShip("fragata", Compass.NORTH, new Position(0, 0));
-        // Nenhum tiro ainda → deve flutuar
-        assertTrue(fragata.stillFloating(), "Navio novo deve flutuar");
-
-        // Atira em todas exceto a última posição
-        for (int i = 0; i < fragata.getSize() - 1; i++)
-            fragata.getPositions().get(i).shoot();
-        assertTrue(fragata.stillFloating(), "Ainda flutua se apenas algumas posições atingidas");
-
-        // Atira na última posição
-        fragata.getPositions().get(fragata.getSize() - 1).shoot();
-        assertFalse(fragata.stillFloating(), "Afunda após todos os tiros");
-    }
-
-    @Test
-    @DisplayName("tooCloseTo com navio não adjacente deve retornar false")
-    void testTooCloseToFalse() {
-        Ship fragata = Ship.buildShip("fragata", Compass.NORTH, new Position(0, 0));
-        Ship caravela = Ship.buildShip("caravela", Compass.NORTH, new Position(10, 10)); // longe
-
-        assertFalse(fragata.tooCloseTo(caravela), "Navios não adjacentes não são 'too close'");
-    }
-
-    @Test
-    @DisplayName("shoot com posição não ocupada não deve lançar exceção")
-    void testShootNoHit() {
-        Ship barca = new Barge(Compass.NORTH, new Position(0, 0));
-        // Pos não pertence ao navio
-        barca.shoot(new Position(5, 5));
-        assertTrue(barca.stillFloating(), "Navio não atingido deve continuar flutuando");
-    }
-
-    @Test
-    @DisplayName("getTop/Bottom/Left/RightMostPos deve funcionar com múltiplas posições")
-    void testBoundaryMethodsMultiplePositions() {
-        Ship nau = Ship.buildShip("nau", Compass.EAST, new Position(0, 0));
-        // EAST => posicoes: (0,0),(0,1),(0,2)
-        assertAll("Testar limites com múltiplas posições",
-                () -> assertEquals(0, nau.getTopMostPos()),
-                () -> assertEquals(0, nau.getBottomMostPos()),
-                () -> assertEquals(0, nau.getLeftMostPos()),
-                () -> assertEquals(2, nau.getRightMostPos())
-        );
-    }
-
-
-    // tentaiva de 100% coverage
-
-    @Test
-    @DisplayName("stillFloating retorna true se algumas posições estão hitadas")
-    void testStillFloatingPartialHit() {
-        Ship barca = new Barge(Compass.NORTH, new Position(0, 0));
-        // Barge tem apenas 1 posição, então vamos usar Carrack para múltiplas
-        Ship nau = new Carrack(Compass.NORTH, new Position(0, 0));
-        nau.getPositions().get(0).shoot(); // só a primeira posição acertada
-        assertTrue(nau.stillFloating(), "Navio parcialmente atingido ainda flutua");
-    }
-
-
-    @Test
-    @DisplayName("Limites com navio de 1 posição")
-    void testBoundariesSinglePosition() {
-        Ship barca = new Barge(Compass.NORTH, new Position(3, 7));
-        assertAll("Limites de navio de tamanho 1",
-                () -> assertEquals(3, barca.getTopMostPos()),
-                () -> assertEquals(3, barca.getBottomMostPos()),
-                () -> assertEquals(7, barca.getLeftMostPos()),
-                () -> assertEquals(7, barca.getRightMostPos())
+        assertAll(
+                () -> assertTrue(barca   instanceof Barge),
+                () -> assertTrue(caravela instanceof Caravel),
+                () -> assertTrue(nau     instanceof Carrack),
+                () -> assertTrue(fragata instanceof Frigate),
+                () -> assertTrue(galeao  instanceof Galleon),
+                () -> assertNull(invalido, "Tipo inválido deve devolver null")
         );
     }
 
     @Test
-    @DisplayName("tooCloseTo(IPosition) retorna false quando nenhuma posição adjacente")
-    void testTooCloseToPositionFalse() {
-        Ship barca = new Barge(Compass.NORTH, new Position(0, 0));
-        Position farAway = new Position(5, 5);
-        assertFalse(barca.tooCloseTo(farAway));
+    @DisplayName("Construtor de Ship (via Barge) aceita argumentos válidos")
+    void testConstructorValidArguments() {
+        Ship s = new Barge(Compass.NORTH, new Position(0, 0));
+        assertEquals("Barca", s.getCategory());
+        assertEquals(Compass.NORTH, s.getBearing());
+        assertEquals(new Position(0, 0), s.getPosition());
+        assertEquals(1, s.getPositions().size());
     }
 
     @Test
-    @DisplayName("tooCloseTo(IShip) retorna false quando nenhum navio está adjacente")
-    void testTooCloseToShipFalse() {
-        Ship barca = new Barge(Compass.NORTH, new Position(0, 0));
-        Ship caravela = new Caravel(Compass.NORTH, new Position(5, 5));
-        assertFalse(barca.tooCloseTo(caravela));
+    @DisplayName("Construtor lança AssertionError com bearing nulo")
+    void testConstructorNullBearing() {
+        assertThrows(AssertionError.class,
+                () -> new Barge(null, new Position(0, 0)));
     }
 
     @Test
-    @DisplayName("occupies retorna false se nenhuma posição coincide")
-    void testOccupiesFalseFullLoop() {
-        Ship nau = new Carrack(Compass.NORTH, new Position(0, 0));
-        Position notOccupied = new Position(10, 10); // fora de todas as posições
-        assertFalse(nau.occupies(notOccupied));
-    }
-
-    @Test
-    @DisplayName("shoot em posição não ocupada não altera navio")
-    void testShootMiss() {
-        Ship barca = new Barge(Compass.NORTH, new Position(0, 0));
-        Position miss = new Position(5, 5);
-        barca.shoot(miss); // nenhum efeito
-        assertTrue(barca.stillFloating(), "Navio não é atingido quando posição não coincide");
-    }
-
-    @Test
-    @DisplayName("Construtor lança AssertionError se posição nula")
+    @DisplayName("Construtor lança AssertionError com posição nula")
     void testConstructorNullPosition() {
-        assertThrows(AssertionError.class, () ->
-                new Barge(Compass.NORTH, null)
+        assertThrows(AssertionError.class,
+                () -> new Barge(Compass.NORTH, null));
+    }
+
+    @Test
+    @DisplayName("stillFloating funciona em navio de uma só posição")
+    void testStillFloatingSingleCellShip() {
+        Ship barca = new Barge(Compass.NORTH, new Position(2, 2));
+
+        assertTrue(barca.stillFloating());
+
+        barca.shoot(new Position(2, 2));
+        assertFalse(barca.stillFloating());
+    }
+
+    @Test
+    @DisplayName("stillFloating em navio maior: algumas posições atingidas vs todas")
+    void testStillFloatingMultiCellShip() {
+        Ship fragata = new Frigate(Compass.NORTH, new Position(0, 0));
+
+        assertTrue(fragata.stillFloating());
+
+        for (int i = 0; i < fragata.getSize() - 1; i++) {
+            fragata.getPositions().get(i).shoot();
+        }
+        assertTrue(fragata.stillFloating());
+
+        fragata.getPositions().get(fragata.getSize() - 1).shoot();
+        assertFalse(fragata.stillFloating());
+    }
+
+    @Test
+    @DisplayName("Métodos de limites usam correctamente todas as posições")
+    void testBoundaryMethodsCustomShip() {
+
+        TestShip ship = new TestShip(Arrays.asList(
+                new Position(5, 5),
+                new Position(3, 6),
+                new Position(7, 4)
+        ));
+
+        assertAll(
+                () -> assertEquals(3, ship.getTopMostPos()),
+                () -> assertEquals(7, ship.getBottomMostPos()),
+                () -> assertEquals(4, ship.getLeftMostPos()),
+                () -> assertEquals(6, ship.getRightMostPos())
+        );
+    }
+
+    @Test
+    @DisplayName("Limites funcionam também para navio de uma posição")
+    void testBoundaryMethodsSingleCell() {
+        Ship barca = new Barge(Compass.NORTH, new Position(8, 1));
+
+        assertAll(
+                () -> assertEquals(8, barca.getTopMostPos()),
+                () -> assertEquals(8, barca.getBottomMostPos()),
+                () -> assertEquals(1, barca.getLeftMostPos()),
+                () -> assertEquals(1, barca.getRightMostPos())
+        );
+    }
+
+    @Test
+    @DisplayName("occupies devolve true quando posição pertence ao navio")
+    void testOccupiesTrue() {
+        Ship nau = new Carrack(Compass.NORTH, new Position(0, 0));
+        IPosition first = nau.getPositions().get(0);
+
+        assertTrue(nau.occupies(first));
+    }
+
+    @Test
+    @DisplayName("occupies devolve false quando posição não pertence ao navio")
+    void testOccupiesFalse() {
+        Ship nau = new Carrack(Compass.NORTH, new Position(0, 0));
+        IPosition far = new Position(10, 10);
+
+        assertFalse(nau.occupies(far));
+    }
+
+    @Test
+    @DisplayName("occupies lança AssertionError se posição for null")
+    void testOccupiesNullPosition() {
+        Ship nau = new Carrack(Compass.NORTH, new Position(0, 0));
+        assertThrows(AssertionError.class, () -> nau.occupies(null));
+    }
+
+    @Test
+    @DisplayName("tooCloseTo(IPosition) true quando há posição adjacente")
+    void testTooCloseToPositionTrue() {
+        TestShip ship = new TestShip(Arrays.asList(
+                new Position(5, 5),
+                new Position(3, 6),
+                new Position(7, 4)
+        ));
+
+        IPosition near = new Position(6, 5); // adjacente a (5,5)
+        assertTrue(ship.tooCloseTo(near));
+    }
+
+    @Test
+    @DisplayName("tooCloseTo(IPosition) false quando não há posição adjacente")
+    void testTooCloseToPositionFalse() {
+        TestShip ship = new TestShip(Arrays.asList(
+                new Position(5, 5),
+                new Position(3, 6),
+                new Position(7, 4)
+        ));
+
+        IPosition far = new Position(20, 20);
+        assertFalse(ship.tooCloseTo(far));
+    }
+
+    @Test
+    @DisplayName("tooCloseTo(IShip) true quando algum ponto do outro navio é adjacente")
+    void testTooCloseToShipTrue() {
+        TestShip ship1 = new TestShip(Arrays.asList(
+                new Position(5, 5),
+                new Position(3, 6)
+        ));
+        TestShip ship2 = new TestShip(Arrays.asList(
+                new Position(6, 5)  // adjacente a (5,5)
+        ));
+
+        assertTrue(ship1.tooCloseTo(ship2));
+    }
+
+    @Test
+    @DisplayName("tooCloseTo(IShip) false quando navios estão longe")
+    void testTooCloseToShipFalse() {
+        TestShip ship1 = new TestShip(Arrays.asList(
+                new Position(0, 0)
+        ));
+        TestShip ship2 = new TestShip(Arrays.asList(
+                new Position(10, 10)
+        ));
+
+        assertFalse(ship1.tooCloseTo(ship2));
+    }
+
+    @Test
+    @DisplayName("tooCloseTo(IShip) lança AssertionError se navio for null")
+    void testTooCloseToShipNull() {
+        Ship ship = new Barge(Compass.NORTH, new Position(0, 0));
+        assertThrows(AssertionError.class, () -> ship.tooCloseTo((IShip) null));
+    }
+
+    @Test
+    @DisplayName("shoot acerta posição correcta e afeta o estado")
+    void testShootHit() {
+        Ship barca = new Barge(Compass.NORTH, new Position(1, 1));
+
+        assertTrue(barca.stillFloating());
+        barca.shoot(new Position(1, 1));
+        assertFalse(barca.stillFloating());
+    }
+
+    @Test
+    @DisplayName("shoot em posição que não pertence ao navio não altera o estado")
+    void testShootMiss() {
+        Ship barca = new Barge(Compass.NORTH, new Position(1, 1));
+
+        barca.shoot(new Position(5, 5)); // nenhuma posição coincide
+        assertTrue(barca.stillFloating());
+    }
+
+    @Test
+    @DisplayName("shoot lança AssertionError se posição for null")
+    void testShootNullPosition() {
+        Ship barca = new Barge(Compass.NORTH, new Position(1, 1));
+        assertThrows(AssertionError.class, () -> barca.shoot(null));
+    }
+
+    @Test
+    @DisplayName("toString inclui categoria, bearing e posição")
+    void testToString() {
+        Ship barca = new Barge(Compass.EAST, new Position(4, 2));
+        String s = barca.toString();
+
+        assertAll(
+                () -> assertTrue(s.contains("Barca")),
+                () -> assertTrue(s.contains(barca.getBearing().toString())),
+                () -> assertTrue(s.contains(barca.getPosition().toString()))
         );
     }
 
