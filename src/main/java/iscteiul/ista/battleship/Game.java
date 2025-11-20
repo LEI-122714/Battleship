@@ -27,6 +27,8 @@ public class Game implements IGame {
         shots = new ArrayList<>();
         countInvalidShots = 0;
         countRepeatedShots = 0;
+        countHits = 0;      //faltava
+        countSinks = 0;     //faltava
         this.fleet = fleet;
     }
 

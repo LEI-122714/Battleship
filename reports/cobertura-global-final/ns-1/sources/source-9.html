@@ -5,7 +5,7 @@
 <html id="htmlId">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
-  <title>Coverage Report > Barge</title>
+  <title>Coverage Report > IFleet</title>
   <style type="text/css">
     @import "../../css/coverage.css";
     @import "../../css/idea.min.css";
@@ -22,7 +22,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     <a href="../index.html">iscteiul.ista.battleship</a>
 </div>
 
-<h1>Coverage Summary for Class: Barge (iscteiul.ista.battleship)</h1>
+<h1>Coverage Summary for Class: IFleet (iscteiul.ista.battleship)</h1>
 
 <table class="coverageStats">
 <tr>
@@ -41,7 +41,7 @@ Current scope:     <a href="../../index.html">all classes</a>
 </th>
 </tr>
 <tr>
-  <td class="name">Barge</td>
+  <td class="name">IFleet</td>
 <td class="coverageStat">
   <span class="percent">
     100%
@@ -55,7 +55,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (3/3)
+    (1/1)
   </span>
 </td>
 <td class="coverageStat">
@@ -63,7 +63,7 @@ Current scope:     <a href="../../index.html">all classes</a>
     100%
   </span>
   <span class="absValue">
-    (4/4)
+    (2/2)
   </span>
 </td>
 </tr>
@@ -80,24 +80,23 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp; */
 &nbsp;package iscteiul.ista.battleship;
 &nbsp;
-&nbsp;public class Barge extends Ship {
-<b class="fc">&nbsp;    private static final Integer SIZE = 1;</b>
-&nbsp;    private static final String NAME = &quot;Barca&quot;;
+&nbsp;import java.util.List;
 &nbsp;
-&nbsp;    /**
-&nbsp;     * @param bearing - barge bearing
-&nbsp;     * @param pos     - upper left position of the barge
-&nbsp;     */
-&nbsp;    public Barge(Compass bearing, IPosition pos) {
-<b class="fc">&nbsp;        super(Barge.NAME, bearing, pos);</b>
-<b class="fc">&nbsp;        getPositions().add(new Position(pos.getRow(), pos.getColumn()));</b>
-&nbsp;    }
+&nbsp;public interface IFleet {
+<b class="fc">&nbsp;    Integer BOARD_SIZE = 10;</b>
+<b class="fc">&nbsp;    Integer FLEET_SIZE = 10;</b>
 &nbsp;
-&nbsp;    @Override
-&nbsp;    public Integer getSize() {
-<b class="fc">&nbsp;        return SIZE;</b>
-&nbsp;    }
+&nbsp;    List&lt;IShip&gt; getShips();
 &nbsp;
+&nbsp;    boolean addShip(IShip s);
+&nbsp;
+&nbsp;    List&lt;IShip&gt; getShipsLike(String category);
+&nbsp;
+&nbsp;    List&lt;IShip&gt; getFloatingShips();
+&nbsp;
+&nbsp;    IShip shipAt(IPosition pos);
+&nbsp;
+&nbsp;    void printStatus();
 &nbsp;}
 </code>
 </pre>
