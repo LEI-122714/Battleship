@@ -21,11 +21,11 @@
 
 * [unknown] C6 CarrackTest
 
-* [unknown] C7 FrigateTest
+* [passed] C7 FrigateTest @LEI-122687
 
-* [unknown] C8 GalleonTest
+* [passed] C8 GalleonTest @LEI-122687
 
-* [unknown] C9 FleetTest
+* [passed] C9 FleetTest @LEI-122687
 
 
 ### S4 Structural components test case
@@ -33,7 +33,7 @@
 
 * [unknown] C11 CompassTest
 
-* [unknown] C12 GameTest
+* [passed] C12 GameTest @LEI-122687
 
 
 ### S5 Tasks test case
