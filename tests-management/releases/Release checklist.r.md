@@ -3,17 +3,17 @@
 ## Testing checklists
 
 ### S1 Release checklist
-* [unknown] C1 Reports
+* [passed] C1 Reports @all
 
 
 ### S2 Automated tests checklist
-* [unknown] C2 Unit tests 
+* [passed] C2 Unit tests @all
 
 
 ## Unit tests
 
 ### S3 Ships test case
-* [unknown] C3 ShipTest
+* [passed] C3 ShipTest @LEI-122714
 
 * [passed] C4 BargeTest @LEI-99087
 
@@ -29,7 +29,7 @@
 
 
 ### S4 Structural components test case
-* [unknown] C10 PositionTest
+* [passed] C10 PositionTest @LEI-122714
 
 * [passed] C11 CompassTest @LEI-99087
 
@@ -37,6 +37,6 @@
 
 
 ### S5 Tasks test case
-* [unknown] C13 TasksTest
+* [passed] C13 TasksTest @LEI-122714
 
 
